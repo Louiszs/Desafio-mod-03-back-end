@@ -1,0 +1,1 @@
+const conexao = require('../bancodedados/conexao')

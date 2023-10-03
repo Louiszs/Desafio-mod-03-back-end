@@ -1,9 +1,9 @@
 const express = require("express")
-const controller = require("../controller/controlador")
+const usuário = require("../controller/usuarios")
 
 const rota = express()
 
-rota.get("/", controller.test)
+rota.post("/usuario", usuário.cadastrar)
 
 
 module.exports = rota
