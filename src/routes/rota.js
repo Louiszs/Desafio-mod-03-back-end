@@ -10,6 +10,7 @@ rota.post('/login', usuario.login)
 rota.use(verificarUsuarioLogado)
 
 rota.get("/usuario", usuario.detalharUsuario)
+rota.get("/categoria", usuario.listarCategoria)
 
 
 
