@@ -74,9 +74,19 @@ const detalharUsuario = (req, res) => {
     }
 }
 
+const listarCategoria = async (req, res) => {
+    try {
+        const resultado = await conexao.query("select * from categorias ")
+        res.status(200).json(resultado.rows)
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ mensagem: 'Erro interno do servidor' });
+    }
+}
 
 module.exports = {
     cadastrar,
     login,
-    detalharUsuario
+    detalharUsuario,
+    listarCategoria
 }
