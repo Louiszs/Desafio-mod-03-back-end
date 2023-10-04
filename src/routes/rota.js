@@ -1,9 +1,16 @@
 const express = require("express")
-const usuário = require("../controller/usuarios")
+const usuario = require("../controller/usuarios")
+const verificarUsuarioLogado = require("../middleware/intermediario")
 
 const rota = express()
 
-rota.post("/usuario", usuário.cadastrar)
+rota.post("/usuario", usuario.cadastrar)
+rota.post('/login', usuario.login)
+
+rota.use(verificarUsuarioLogado)
+
+rota.get("/usuario", usuario.detalharUsuario)
+
 
 
 module.exports = rota
