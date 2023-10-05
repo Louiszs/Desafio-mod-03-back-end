@@ -39,6 +39,26 @@ const cadastrarTransacao = async (req, res) => {
     }
 }
 
+const detalharTransacao = async (req, res) => {
+    try {
+        const transacao_id = req.params.id;
+
+        if (!Number.isInteger(parseInt(transacao_id))) {
+            return res.status(400).json({ mensagem: 'ID inválido' });
+        }
+
+        const resultado = await conexao.query('select * from transacoes where id = $1 and usuario_id = $2', [transacao_id, req.usuario.id]);
+
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ mensagem: 'transação não encontrada' });
+        }
+        return res.status(200).json(resultado.rows[0])
+    } catch (erro) {
+        return res.status(400).json({ mensagem: erro.message })
+    }
+}
+
 module.exports = {
-    cadastrarTransacao
+    cadastrarTransacao,
+    detalharTransacao
 }
