@@ -84,9 +84,42 @@ const listarCategoria = async (req, res) => {
     }
 }
 
+const atualizarUsuario = async (req, res) => {
+    try {
+        const { id } = req.usuario
+        const { nome, email, senha } = req.body
+
+        if (!nome || !email || !senha) {
+            return res.status(400).json({
+                mensagem: 'Preencha os campos obrigatórios: nome, email e senha'
+            })
+        }
+
+        const usuarioExistente = await conexao.query(
+            'select id from usuarios where email = $1 and id !=$2', [email, id]
+        )
+
+        if (usuarioExistente.rowCount > 0)
+            return res.status(400).json({
+                mensagem: 'O e-mail informado já está sendo utilizado por outro usuário.'
+            })
+
+        const senhaCriptografada = await bcrypt.hash(senha, 10)
+        await conexao.query(
+            'update usuarios set nome=$1, email=$2, senha=$3 where id=$4',
+            [nome, email, senhaCriptografada, id]
+        )
+
+        return res.status(204).send()
+    } catch (erro) {
+        return res.status(400).json({ mensagem: erro.message })
+    }
+}
+
 module.exports = {
     cadastrar,
     login,
     detalharUsuario,
-    listarCategoria
+    listarCategoria,
+    atualizarUsuario
 }
