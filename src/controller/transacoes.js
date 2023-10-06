@@ -1,6 +1,4 @@
 const conexao = require('../bancodedados/conexao')
-const bcrypt = require('bcrypt')
-const jwt = require("jsonwebtoken")
 require("dotenv").config()
 
 const cadastrarTransacao = async (req, res) => {
@@ -58,7 +56,35 @@ const detalharTransacao = async (req, res) => {
     }
 }
 
+const atualizarTransacao = async (req, res) => {
+    try {
+        const transacao_id = req.params.id;
+
+        if (!Number.isInteger(parseInt(transacao_id))) {
+            return res.status(400).json({ mensagem: 'ID inválido' });
+        }
+
+        const { descricao, valor, data, categoria_id, tipo } = req.body
+
+        if (!descricao || !valor || !data || !categoria_id || !tipo) {
+            return res.status(400).json({ mensagem: 'Todos os campos obrigatórios devem ser informados.' })
+        }
+
+        if (tipo !== 'entrada' && tipo !== 'saida') {
+            return res.status(400).json({
+                mensagem: 'O campo "tipo" deve ser "entrada" ou "saida"'
+            })
+        }
+        await conexao.query("update transacoes set descricao=$1, valor=$2, data=$3, categoria_id=$4, tipo=$5 where id=$6 and usuario_id=$7", [descricao, valor, data, categoria_id, tipo, transacao_id, req.usuario.id])
+
+        return res.status(204).send()
+    } catch (erro) {
+        return res.status(400).json({ mensagem: erro.message })
+    }
+}
+
 module.exports = {
     cadastrarTransacao,
-    detalharTransacao
+    detalharTransacao,
+    atualizarTransacao
 }
