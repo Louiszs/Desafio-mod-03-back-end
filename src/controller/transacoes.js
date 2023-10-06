@@ -32,8 +32,9 @@ const cadastrarTransacao = async (req, res) => {
         const transacaoCadastrada = { id: result.rows[0], descricao, valor, data, usuario_id, categoria_id, tipo }
 
         res.status(201).json(transacaoCadastrada);
-    } catch (erro) {
-        return res.status(400).json({ mensagem: erro.message })
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ mensagem: 'Erro interno do servidor' });
     }
 }
 
@@ -51,8 +52,9 @@ const detalharTransacao = async (req, res) => {
             return res.status(404).json({ mensagem: 'transação não encontrada' });
         }
         return res.status(200).json(resultado.rows[0])
-    } catch (erro) {
-        return res.status(400).json({ mensagem: erro.message })
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ mensagem: 'Erro interno do servidor' });
     }
 }
 
@@ -78,13 +80,30 @@ const atualizarTransacao = async (req, res) => {
         await conexao.query("update transacoes set descricao=$1, valor=$2, data=$3, categoria_id=$4, tipo=$5 where id=$6 and usuario_id=$7", [descricao, valor, data, categoria_id, tipo, transacao_id, req.usuario.id])
 
         return res.status(204).send()
-    } catch (erro) {
-        return res.status(400).json({ mensagem: erro.message })
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ mensagem: 'Erro interno do servidor' });
+    }
+}
+
+const obterExtrato = async (req, res) => {
+    try {
+        const entradaQuery = await conexao.query('select coalesce(sum(valor), 0) as sum from transacoes where tipo = \'entrada\' and usuario_id = $1', [req.usuario.id]);
+        const saidaQuery = await conexao.query('select coalesce(sum(valor), 0) as sum from transacoes where tipo = \'saida\' and usuario_id = $1', [req.usuario.id]);
+
+        const entrada = entradaQuery.rows[0] ? parseFloat(entradaQuery.rows[0].sum) : 0;
+        const saida = saidaQuery.rows[0] ? parseFloat(saidaQuery.rows[0].sum) : 0;
+
+        return res.status(200).json({ entrada, saida });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ mensagem: 'Erro interno do servidor' });
     }
 }
 
 module.exports = {
     cadastrarTransacao,
     detalharTransacao,
-    atualizarTransacao
+    atualizarTransacao,
+    obterExtrato
 }
