@@ -113,10 +113,34 @@ const listarTransacoes = async (req, res) => {
     }
 }
 
+const excluirTransacao = async (req, res) => {
+    try {
+        const { id: idUsuario } = req.usuario
+        const { id } = req.params
+        if (!Number.isInteger(parseInt(id))) {
+            return res.status(400).json({ mensagem: 'ID inválido' });
+        }
+
+        const transacao = await conexao.query(
+            'select * from transacoes where id =$1 and usuario_id = $2', [id, idUsuario]
+        )
+
+        if (transacao.rowCount === 0) {
+            return res.status(404).json({ mensagem: 'Transação não encontrada ou não pertence ao usuário' })
+        }
+
+        await conexao.query('delete from transacoes where id = $1', [id])
+        return res.status(204).send()
+    } catch (erro) {
+        return res.status(400).json({ mensagem: erro.message })
+    }
+}
+
 module.exports = {
     cadastrarTransacao,
     detalharTransacao,
     atualizarTransacao,
     obterExtrato,
-    listarTransacoes
+    listarTransacoes,
+    excluirTransacao
 }

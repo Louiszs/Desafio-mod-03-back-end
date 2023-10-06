@@ -19,6 +19,7 @@ rota.get("/transacao/extrato", transacao.obterExtrato)
 rota.get("/transacao/:id", transacao.detalharTransacao)
 rota.get("/transacao", transacao.listarTransacoes)
 rota.put("/transacao/:id", transacao.atualizarTransacao)
+rota.delete("/transacao/:id", transacao.excluirTransacao)
 
 
 
