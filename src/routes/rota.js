@@ -17,6 +17,7 @@ rota.get("/categoria", usuario.listarCategoria)
 rota.post("/transacao", transacao.cadastrarTransacao)
 rota.get("/transacao/extrato", transacao.obterExtrato)
 rota.get("/transacao/:id", transacao.detalharTransacao)
+rota.get("/transacao", transacao.listarTransacoes)
 rota.put("/transacao/:id", transacao.atualizarTransacao)
 
 

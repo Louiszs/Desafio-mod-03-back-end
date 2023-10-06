@@ -101,9 +101,22 @@ const obterExtrato = async (req, res) => {
     }
 }
 
+const listarTransacoes = async (req, res) => {
+    try {
+        const { id } = req.usuario
+        const transacoes = await conexao.query(
+            'select * from transacoes where usuario_id = $1', [id]
+        )
+        return res.status(200).json(transacoes.rows)
+    } catch (erro) {
+        return res.status(400).json({ mensagem: erro.message })
+    }
+}
+
 module.exports = {
     cadastrarTransacao,
     detalharTransacao,
     atualizarTransacao,
-    obterExtrato
+    obterExtrato,
+    listarTransacoes
 }
