@@ -1,4 +1,4 @@
-const conexao = require('../bancodedados/conexao')
+const conexao = require('../database/conexao')
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
 require("dotenv").config()

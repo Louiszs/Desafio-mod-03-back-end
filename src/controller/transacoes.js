@@ -1,4 +1,4 @@
-const conexao = require('../bancodedados/conexao')
+const conexao = require('../database/conexao')
 require("dotenv").config()
 
 const cadastrarTransacao = async (req, res) => {
@@ -29,7 +29,7 @@ const cadastrarTransacao = async (req, res) => {
             [descricao, valor, data, categoria_id, usuario_id, tipo]
         )
 
-        const transacaoCadastrada = { id: result.rows[0], descricao, valor, data, usuario_id, categoria_id, tipo }
+        const transacaoCadastrada = { id: result.rows[0].id, descricao, valor, data, usuario_id, categoria_id, tipo }
 
         res.status(201).json(transacaoCadastrada);
     } catch (error) {
@@ -77,9 +77,18 @@ const atualizarTransacao = async (req, res) => {
                 mensagem: 'O campo "tipo" deve ser "entrada" ou "saida"'
             })
         }
+
+        const categoriaExistente = await conexao.query('select id from categorias where id = $1', [categoria_id]);
+
+        if (categoriaExistente.rowCount === 0) {
+            return res.status(400).json({
+                mensagem: 'Categoria não encontrada para o ID fornecido'
+            });
+        }
+
         await conexao.query("update transacoes set descricao=$1, valor=$2, data=$3, categoria_id=$4, tipo=$5 where id=$6 and usuario_id=$7", [descricao, valor, data, categoria_id, tipo, transacao_id, req.usuario.id])
 
-        return res.status(204).send()
+        return res.status(204).send();
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ mensagem: 'Erro interno do servidor' });
@@ -136,14 +145,14 @@ const listarTransacoes = async (req, res) => {
 
 const excluirTransacao = async (req, res) => {
     try {
-        const { id: idUsuario } = req.usuario
-        const { id } = req.params
+        const { id: idUsuario } = req.usuario;
+        const { id } = req.params;
         if (!Number.isInteger(parseInt(id))) {
             return res.status(400).json({ mensagem: 'ID inválido' });
         }
 
         const transacao = await conexao.query(
-            'select * from transacoes where id =$1 and usuario_id = $2', [id, idUsuario]
+            'select * from transacoes where id = $1 and usuario_id = $2', [id, idUsuario]
         )
 
         if (transacao.rowCount === 0) {
@@ -151,7 +160,7 @@ const excluirTransacao = async (req, res) => {
         }
 
         await conexao.query('delete from transacoes where id = $1', [id])
-        return res.status(204).send()
+        return res.status(204).send(); // Usando status 204 (No Content)
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ mensagem: 'Erro interno do servidor' });

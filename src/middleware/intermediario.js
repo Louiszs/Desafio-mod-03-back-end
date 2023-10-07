@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const pool = require('../bancodedados/conexao')
+const pool = require('../database/conexao')
 require("dotenv").config()
 
 const verificarUsuarioLogado = async (req, res, next) => {
