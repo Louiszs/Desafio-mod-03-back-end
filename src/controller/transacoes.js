@@ -103,15 +103,36 @@ const obterExtrato = async (req, res) => {
 
 const listarTransacoes = async (req, res) => {
     try {
-        const { id } = req.usuario
-        const transacoes = await conexao.query(
-            'select * from transacoes where usuario_id = $1', [id]
-        )
-        return res.status(200).json(transacoes.rows)
-    } catch (erro) {
-        return res.status(400).json({ mensagem: erro.message })
+        const { id } = req.usuario;
+        const { filtro } = req.query;
+
+        let query = 'SELECT t.id, t.tipo, t.descricao, REPLACE(t.valor::text, \'.\', \'\')::numeric as valor, t.data, t.usuario_id, ' +
+            't.categoria_id, c.descricao AS categoria_nome FROM transacoes t ' +
+            'INNER JOIN categorias c ON t.categoria_id = c.id ' +
+            'WHERE t.usuario_id = $1';
+
+        const queryParams = [id];
+
+        if (filtro && filtro.length > 0) {
+            query += ' AND (';
+            filtro.forEach((categoria, index) => {
+                if (index > 0) {
+                    query += ' OR ';
+                }
+                query += 'c.descricao = $' + (index + 2);
+                queryParams.push(categoria);
+            });
+            query += ')';
+        }
+
+        const transacoes = await conexao.query(query, queryParams);
+
+        return res.status(200).json(transacoes.rows);
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ mensagem: 'Erro interno do servidor' });
     }
-}
+};
 
 const excluirTransacao = async (req, res) => {
     try {
@@ -131,10 +152,13 @@ const excluirTransacao = async (req, res) => {
 
         await conexao.query('delete from transacoes where id = $1', [id])
         return res.status(204).send()
-    } catch (erro) {
-        return res.status(400).json({ mensagem: erro.message })
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ mensagem: 'Erro interno do servidor' });
     }
 }
+
+
 
 module.exports = {
     cadastrarTransacao,
